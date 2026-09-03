@@ -1,0 +1,6 @@
+flet==0.28.3
+supabase==2.11.0
+google-auth==2.37.0
+google-auth-oauthlib==1.2.1
+google-api-python-client==2.157.0
+python-dotenv==1.0.1
