@@ -32,6 +32,27 @@ def obter_mentor_com_credenciais(mentor_id: str) -> Mentor | None:
     return Mentor.from_row(resposta.data[0])
 
 
+def obter_mentor_por_link(mentor_id: str, token: str) -> Mentor | None:
+    """Valida o link secreto individual de /conectar/<mentor_id>/<token>. Usa client admin:
+    `link_token` não é uma coluna liberada para anon/authenticated."""
+    if not token:
+        return None
+    resposta = (
+        get_admin_client()
+        .table("mentores")
+        .select("id, nome, link_token")
+        .eq("id", mentor_id)
+        .limit(1)
+        .execute()
+    )
+    if not resposta.data:
+        return None
+    linha = resposta.data[0]
+    if not linha.get("link_token") or linha["link_token"] != token:
+        return None
+    return Mentor.from_row(linha)
+
+
 def listar_cursos(client: Client) -> list[Curso]:
     resposta = client.table("cursos").select("*").order("nome").execute()
     return [Curso.from_row(row) for row in resposta.data]

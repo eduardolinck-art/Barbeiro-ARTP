@@ -4,7 +4,6 @@ import flet as ft
 
 from app import config, google_calendar
 from app.repositories import mentores_repo
-from app.supabase_client import novo_client
 from app.views.agendamento_view import agendamento_view
 from app.views.auth_view import auth_view
 from app.views.historico_view import historico_view
@@ -45,29 +44,31 @@ def main(page: ft.Page) -> None:
         )
         return ft.View("/app", [tabs], padding=0)
 
-    def view_conectar_mentores() -> ft.View:
-        """Página utilitária (sem autenticação própria) para cada mentor conectar a própria
-        agenda do Google. O dono do negócio envia o link /conectar-mentores para cada mentor."""
-        mentores = mentores_repo.listar_mentores(novo_client())
-        linhas = []
-        for mentor in mentores:
+    def view_conectar_mentor() -> ft.View:
+        """Link secreto e individual: /conectar/<mentor_id>/<token>. Só quem tem o link exato
+        de UM mentor consegue conectar a agenda DELE — evita conectar a agenda errada."""
+        partes = [p for p in urlsplit(page.route).path.split("/") if p]
+        mentor_id = partes[1] if len(partes) > 1 else None
+        token = partes[2] if len(partes) > 2 else None
 
-            def conectar(e: ft.ControlEvent, mentor_id: str = mentor.id) -> None:
-                page.launch_url(google_calendar.build_authorization_url(mentor_id))
+        mentor = mentores_repo.obter_mentor_por_link(mentor_id, token) if mentor_id and token else None
 
-            linhas.append(
-                ft.Row(
-                    [
-                        ft.Text(mentor.nome, expand=True),
-                        ft.ElevatedButton("Conectar Google Agenda", on_click=conectar),
-                    ]
-                )
+        if mentor is None:
+            return ft.View(
+                page.route,
+                [ft.Text("Link inválido ou expirado.", size=16, color=ft.Colors.ERROR)],
+                padding=20,
             )
+
+        def conectar(e: ft.ControlEvent) -> None:
+            page.launch_url(google_calendar.build_authorization_url(mentor.id))
+
         return ft.View(
-            "/conectar-mentores",
+            page.route,
             [
-                ft.Text("Conectar agendas dos mentores", size=20, weight=ft.FontWeight.BOLD),
-                ft.Column(linhas, spacing=10),
+                ft.Text(f"Olá, {mentor.nome}!", size=20, weight=ft.FontWeight.BOLD),
+                ft.Text("Clique abaixo para conectar sua Google Agenda ao sistema de mentorias."),
+                ft.ElevatedButton("Conectar Google Agenda", icon=ft.Icons.LINK, on_click=conectar),
             ],
             padding=20,
         )
@@ -112,8 +113,8 @@ def main(page: ft.Page) -> None:
         try:
             if rota_base == "/oauth2callback":
                 page.views.append(view_oauth_callback())
-            elif rota_base == "/conectar-mentores":
-                page.views.append(view_conectar_mentores())
+            elif rota_base.startswith("/conectar/"):
+                page.views.append(view_conectar_mentor())
             elif rota_base == "/app":
                 if not esta_logado():
                     page.go("/login")
