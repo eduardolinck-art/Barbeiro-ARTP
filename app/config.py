@@ -27,11 +27,22 @@ GOOGLE_CALENDAR_SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
 
 def _fingerprint(nome: str, valor: str) -> str:
+    import hashlib
+
     if not valor:
         return f"{nome}: VAZIO"
-    return f"{nome}: len={len(valor)} inicio={valor[:12]!r} fim={valor[-12:]!r}"
+    sha = hashlib.sha256(valor.encode()).hexdigest()
+    return f"{nome}: len={len(valor)} sha256={sha}"
 
 
 print("[config] " + _fingerprint("SUPABASE_URL", SUPABASE_URL), flush=True)
 print("[config] " + _fingerprint("SUPABASE_ANON_KEY", SUPABASE_ANON_KEY), flush=True)
 print("[config] " + _fingerprint("SUPABASE_SERVICE_ROLE_KEY", SUPABASE_SERVICE_ROLE_KEY), flush=True)
+
+try:
+    from supabase import create_client as _test_create_client
+
+    _test_create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+    print("[config] create_client(SUPABASE_ANON_KEY) OK", flush=True)
+except Exception as _exc:  # noqa: BLE001
+    print(f"[config] create_client(SUPABASE_ANON_KEY) FALHOU: {_exc!r}", flush=True)
