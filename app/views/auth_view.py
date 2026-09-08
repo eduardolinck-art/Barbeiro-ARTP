@@ -103,7 +103,10 @@ def auth_view(page: ft.Page, ao_autenticar) -> ft.Control:
             page.session.set("perfil_id", resultado.user.id)
             ao_autenticar()
         except Exception as exc:  # noqa: BLE001 - qualquer erro do Supabase Auth vira mensagem de UI
-            print(f"[auth_view] erro no {'cadastro' if modo_cadastro.current else 'login'}: {exc!r}")
+            print(
+                f"[auth_view] erro no {'cadastro' if modo_cadastro.current else 'login'}: {exc!r}",
+                flush=True,
+            )
             erro_texto.value = _mensagem_amigavel(str(exc))
         finally:
             carregando.visible = False
