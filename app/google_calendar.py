@@ -7,6 +7,7 @@ Os tokens ficam persistidos na tabela `mentores` (via mentores_repo).
 from __future__ import annotations
 
 from datetime import date, datetime, time, timedelta
+from zoneinfo import ZoneInfo
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -20,6 +21,7 @@ from app.repositories import agendamentos_repo, mentores_repo
 
 HORARIO_EXPEDIENTE = (9, 18)  # 09h às 18h
 DURACAO_SLOT_MINUTOS = 60
+FUSO_HORARIO = ZoneInfo("America/Sao_Paulo")
 
 
 class GoogleCalendarError(Exception):
@@ -162,7 +164,7 @@ def listar_horarios_livres(mentor_id: str, dia: date) -> list[time]:
 
     livres = []
     for slot in candidatos:
-        inicio_slot = datetime.combine(dia, slot)
+        inicio_slot = datetime.combine(dia, slot, tzinfo=FUSO_HORARIO)
         fim_slot = inicio_slot + timedelta(minutes=DURACAO_SLOT_MINUTOS)
 
         conflita_google = any(

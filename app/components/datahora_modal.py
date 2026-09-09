@@ -37,6 +37,10 @@ def abrir_modal_data_hora(
         except GoogleCalendarError as exc:
             mostrar_erro(str(exc))
             return
+        except Exception as exc:  # noqa: BLE001 - nunca falhar em silêncio na UI
+            print(f"[datahora_modal] erro ao buscar horários: {exc!r}", flush=True)
+            mostrar_erro("Não foi possível carregar os horários. Tente novamente.")
+            return
 
         if not horarios:
             mostrar_erro("Nenhum horário disponível nessa data. Tente outro dia.")
