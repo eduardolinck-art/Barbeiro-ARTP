@@ -6,7 +6,7 @@ from supabase import Client
 from app.models import Agendamento
 from app.supabase_client import get_admin_client
 
-_SELECT_COM_RELACOES = "*, mentores(nome), cursos(nome)"
+_SELECT_COM_RELACOES = "*, mentores(nome), cursos(nome), temas(nome)"
 
 
 def gerar_protocolo(hoje: date | None = None) -> str:
@@ -53,6 +53,7 @@ def criar_agendamento(
     mentorado_id: str,
     mentor_id: str,
     curso_id: str,
+    tema_id: str,
     data: date,
     hora: time,
     google_event_id: str | None = None,
@@ -61,6 +62,7 @@ def criar_agendamento(
         "mentorado_id": mentorado_id,
         "mentor_id": mentor_id,
         "curso_id": curso_id,
+        "tema_id": tema_id,
         "data": data.isoformat(),
         "hora": hora.isoformat(),
         "status": "agendado",

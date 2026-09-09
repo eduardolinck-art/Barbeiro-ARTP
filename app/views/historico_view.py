@@ -39,6 +39,7 @@ def historico_view(page: ft.Page) -> ft.Control:
                             weight=ft.FontWeight.BOLD,
                         ),
                         ft.Text(f"Curso: {agendamento.curso_nome or agendamento.curso_id}"),
+                        ft.Text(f"Tema: {agendamento.tema_nome or agendamento.tema_id or '-'}"),
                         ft.Text(f"Mentor: {agendamento.mentor_nome or agendamento.mentor_id}"),
                         ft.Row(
                             [

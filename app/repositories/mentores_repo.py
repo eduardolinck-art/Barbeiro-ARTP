@@ -1,6 +1,6 @@
 from supabase import Client
 
-from app.models import Curso, Mentor
+from app.models import Curso, Mentor, Tema
 from app.supabase_client import get_admin_client
 
 # anon/authenticated só têm GRANT de leitura em (id, nome) na tabela `mentores` —
@@ -56,6 +56,25 @@ def obter_mentor_por_link(mentor_id: str, token: str) -> Mentor | None:
 def listar_cursos(client: Client) -> list[Curso]:
     resposta = client.table("cursos").select("*").order("nome").execute()
     return [Curso.from_row(row) for row in resposta.data]
+
+
+def listar_temas_por_curso(client: Client, curso_id: str) -> list[Tema]:
+    resposta = (
+        client.table("temas").select("*").eq("curso_id", curso_id).order("nome").execute()
+    )
+    return [Tema.from_row(row) for row in resposta.data]
+
+
+def listar_mentores_por_tema(client: Client, tema_id: str) -> list[Mentor]:
+    resposta = (
+        client.table("mentor_temas")
+        .select(f"mentores({_COLUNAS_PUBLICAS})")
+        .eq("tema_id", tema_id)
+        .execute()
+    )
+    mentores = [row["mentores"] for row in resposta.data if row.get("mentores")]
+    mentores.sort(key=lambda m: m["nome"])
+    return [Mentor.from_row(row) for row in mentores]
 
 
 def salvar_tokens_google(

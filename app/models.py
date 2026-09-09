@@ -55,11 +55,23 @@ class Curso:
 
 
 @dataclass
+class Tema:
+    id: str
+    curso_id: str
+    nome: str
+
+    @classmethod
+    def from_row(cls, row: dict) -> "Tema":
+        return cls(id=row["id"], curso_id=row["curso_id"], nome=row["nome"])
+
+
+@dataclass
 class Agendamento:
     id: str
     mentorado_id: str
     mentor_id: str
     curso_id: str
+    tema_id: str | None
     data: date
     hora: time
     status: str
@@ -68,6 +80,7 @@ class Agendamento:
     criado_em: datetime | None = None
     mentor_nome: str | None = None
     curso_nome: str | None = None
+    tema_nome: str | None = None
 
     @classmethod
     def from_row(cls, row: dict) -> "Agendamento":
@@ -76,6 +89,7 @@ class Agendamento:
             mentorado_id=row["mentorado_id"],
             mentor_id=row["mentor_id"],
             curso_id=row["curso_id"],
+            tema_id=row.get("tema_id"),
             data=row["data"],
             hora=row["hora"],
             status=row["status"],
@@ -84,6 +98,7 @@ class Agendamento:
             criado_em=row.get("criado_em"),
             mentor_nome=(row.get("mentores") or {}).get("nome") if row.get("mentores") else None,
             curso_nome=(row.get("cursos") or {}).get("nome") if row.get("cursos") else None,
+            tema_nome=(row.get("temas") or {}).get("nome") if row.get("temas") else None,
         )
 
 
